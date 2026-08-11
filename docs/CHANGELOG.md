@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixes
+- `@nova-ui/bits` | Align tab and tab-panel IDs with the accessible `tab-{id}` / `panel-{id}` relationship.
+
 ## [20.0.9] 📅 2026-08-05
 ### Fixes
 - Essentional A11y fixies
