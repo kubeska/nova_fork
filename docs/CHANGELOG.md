@@ -1,8 +1,13 @@
 # Changelog
 
-## [Unreleased]
+
+## [20.0.11] 📅 2026-08-24
 ### Fixes
 - `@nova-ui/bits` | Align tab and tab-panel IDs with the accessible `tab-{id}` / `panel-{id}` relationship.
+
+## [20.0.10] 📅 2026-08-11
+### Fixes
+- `@nova-ui/bits` | SkipSpace a11y regression fixed
 
 ## [20.0.9] 📅 2026-08-05
 ### Fixes
