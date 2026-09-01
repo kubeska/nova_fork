@@ -36,6 +36,7 @@ import {
 } from "@angular/core";
 import { Subscription } from "rxjs";
 
+import { KEYBOARD_CODE } from "../../../constants/keycode.constants";
 import { TabHeadingComponent } from "../tab-heading/tab-heading.component";
 
 // <example-url>./../examples/index.html#/tabgroup</example-url>
@@ -44,7 +45,10 @@ import { TabHeadingComponent } from "../tab-heading/tab-heading.component";
     templateUrl: "./tab-heading-group.component.html",
     styleUrls: ["./tab-heading-group.component.less"],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    host: { role: "tablist" },
+    host: {
+        "role": "tablist",
+        "[attr.aria-orientation]": "vertical ? 'vertical' : null",
+    },
     standalone: false,
 })
 export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
@@ -82,7 +86,7 @@ export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
 
     public ngAfterViewInit(): void {
         // Observing the size of the component to check traverse
-        this._ro = new ResizeObserver((entries) =>
+        this._ro = new ResizeObserver(entries =>
             entries.forEach(() => this.checkTraverse())
         );
         this.ngZone.runOutsideAngular(() => {
@@ -97,7 +101,7 @@ export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
         this._changesSubscription = this._tabs.changes.subscribe(
             (changedTabs: any) => {
                 this.setActiveTab();
-                this._tabSelectedSubscriptions.forEach((sub) =>
+                this._tabSelectedSubscriptions.forEach(sub =>
                     sub.unsubscribe()
                 );
                 this._tabSelectedSubscriptions = [];
@@ -115,6 +119,43 @@ export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
 
     public getActiveTab(): TabHeadingComponent {
         return this._tabs.filter((tab: TabHeadingComponent) => tab.active)[0];
+    }
+
+    public onKeyDown(event: KeyboardEvent): void {
+        const tabElement = (event.target as HTMLElement)?.closest?.(
+            "[role='tab']"
+        ) as HTMLElement;
+        const tabElements = Array.from(
+            this.el.nativeElement.querySelectorAll("[role='tab']")
+        ) as HTMLElement[];
+        const currentIndex = tabElements.indexOf(tabElement);
+
+        if (currentIndex < 0) {
+            return;
+        }
+
+        const isForwardKey =
+            (!this.vertical && event.code === KEYBOARD_CODE.ARROW_RIGHT) ||
+            (this.vertical && event.code === KEYBOARD_CODE.ARROW_DOWN);
+        const isBackwardKey =
+            (!this.vertical && event.code === KEYBOARD_CODE.ARROW_LEFT) ||
+            (this.vertical && event.code === KEYBOARD_CODE.ARROW_UP);
+        let nextIndex = -1;
+
+        if (isForwardKey) {
+            nextIndex = this.findEnabledTabIndex(currentIndex, 1);
+        } else if (isBackwardKey) {
+            nextIndex = this.findEnabledTabIndex(currentIndex, -1);
+        } else if (event.code === KEYBOARD_CODE.HOME) {
+            nextIndex = this.findEnabledTabIndex(-1, 1);
+        } else if (event.code === KEYBOARD_CODE.END) {
+            nextIndex = this.findEnabledTabIndex(tabElements.length, -1);
+        }
+
+        if (nextIndex >= 0) {
+            event.preventDefault();
+            tabElements[nextIndex].focus();
+        }
     }
 
     public checkTraverse(): void {
@@ -210,6 +251,21 @@ export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
         return margin < maxAllowedMargin;
     }
 
+    private findEnabledTabIndex(startIndex: number, direction: 1 | -1): number {
+        const tabs = this._tabs.toArray();
+        const tabCount = tabs.length;
+        let index = startIndex;
+
+        for (let offset = 0; offset < tabCount; offset++) {
+            index = (index + direction + tabCount) % tabCount;
+            if (!tabs[index].disabled) {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+
     private isTraverseRightAllowed(margin: string): boolean {
         return this.getNumberFromPixels(margin) < 0;
     }
@@ -246,7 +302,7 @@ export class TabHeadingGroupComponent implements OnDestroy, AfterViewInit {
 
     public ngOnDestroy(): void {
         this._changesSubscription?.unsubscribe();
-        this._tabSelectedSubscriptions.forEach((sub) => sub.unsubscribe());
+        this._tabSelectedSubscriptions.forEach(sub => sub.unsubscribe());
         this._ro?.disconnect();
     }
 }
