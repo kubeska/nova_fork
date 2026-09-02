@@ -1,9 +1,8 @@
 # Changelog
 
-
-## [20.0.11] 📅 2026-08-24
+## [20.0.11] 📅 2026-09-07
 ### Fixes
-- `@nova-ui/bits` | Fixed tab accessibility relationships by aligning `nui-tab` and consumer-owned tab panels with `tab-{id}` / `panel-{id}` IDs. `nui-tab-heading` now sets `aria-controls` only when the consumer provides the controlled panel ID through `ariaControls`.
+- `@nova-ui/bits` | Improved tab accessibility by aligning tab and panel IDs, adding APG keyboard navigation with roving `tabindex`, exposing disabled states and accessible names, and fixing keyboard activation for switches. `nui-tab-heading` sets `aria-controls` when a controlled panel ID is provided through `ariaControls`.
 
 ## [20.0.10] 📅 2026-08-11
 ### Fixes
